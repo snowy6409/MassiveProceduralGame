@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas id="map" width="40" height="40" style="border:1px solid #000000"></canvas>
+<br>
+<input id="x" type="number" value="40" >
+<br>
+<input id="y" type="number" value="40" >
+<button onclick="UpdateSize()">Update</button>
+<script>
+    let w = 40;
+    let h = 40;
+
+    function UpdateSize(){
+        let wid = document.getElementById("x").value;
+        let hei = document.getElementById("y").value;
+        w = wid;
+        h = hei;
+        let c = document.getElementById("map");
+        let ctx = c.getContext("2d");
+        ctx.canvas.width = wid;
+        ctx.canvas.height = hei;
+        i =0;
+        j =0;
+        fetchStatus()
+    }
+
+
+    function fetchStatus(){
+
+        let url = new URL('http://127.0.0.1:25567/get_data')
+        let params = {h:h,w:w}
+        url.search = new URLSearchParams(params).toString();
+        let data = fetch(url)
+            .then(response => response.json())
+            .then(data =>{ return data})
+        data.then(data=> {
+                let index = 0;
+                for(i = 0; i < w; i++){
+                    for(j = 0; j < h; j++)
+                    {
+                        //console.log(data)
+                        let b = data["message"]["Map"][index];
+                        let rgb = "rgb(" + b + "," + b + "," + b + ")";
+                        //console.log(rgb)
+                        ctx.fillStyle = rgb
+                        ctx.fillRect(i, j, 1, 1);
+                        index++;
+                    }
+                }
+            }
+        )
+    }
+
+
+
+    let c = document.getElementById("map");
+    let ctx = c.getContext("2d");
+    let i = 0;
+    let j = 0;
+    window.addEventListener('load',function (){
+        var fetchInterval = 5000;
+        fetchStatus()
+    });
+
+</script>
+</body>
+</html>
