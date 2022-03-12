@@ -12,7 +12,7 @@ from noise import pnoise2
 
 from multiprocessing import Pool
 
-seed = 933566710
+seed = 69
 noise = PerlinNoise(octaves=1, seed=seed)
 
 app = Flask(__name__)
@@ -28,35 +28,30 @@ def generator(i, j):
     return n
 v_gen = np.vectorize(generator)
 
-def perlin_array(shape = (200, 200),
-			scale=100, octaves = 6, 
-			persistence = 0.5, 
-			lacunarity = 2.0, 
-			seed = None):
+def generator_v2(i,j):
+    return pnoise2(i / 100,
+                    j / 100,
+                    octaves=6,
+                    persistence=0.5,
+                    lacunarity=2.0,
+                    repeatx=1024,
+                    repeaty=1024,
+                    base=seed)
 
-    if not seed:
+def perlin_array(shape = (200, 200)):
 
-        seed = np.random.randint(0, 100)
-        print("seed was {}".format(seed))
+    axis_0 = [*range(shape[0])]*shape[1]; axis_0.sort()
+    axis_1 = [*range(shape[1])]*shape[0]
 
-    
+    with Pool(16) as p:
+        arr = p.starmap(generator_v2, zip(axis_0, axis_1))
 
-    arr = np.zeros(shape)
-    for i in range(shape[0]):
-        for j in range(shape[1]):
-            arr[i][j] = pnoise2(i / scale,
-                                        j / scale,
-                                        octaves=octaves,
-                                        persistence=persistence,
-                                        lacunarity=lacunarity,
-                                        repeatx=1024,
-                                        repeaty=1024,
-                                        base=seed)
     max_arr = np.max(arr)
     min_arr = np.min(arr)
     norm_me = lambda x: (x-min_arr)/(max_arr - min_arr)
     norm_me = np.vectorize(norm_me)
     arr = norm_me(arr)
+
     return (255*arr.flatten()).astype("uint8").tolist()
 
 @app.route("/get_data")
@@ -67,9 +62,6 @@ def get_data():
     message = {"Map": []}
 
     start_time = time.time()
-
-    axis_0 = [*range(height)]*width; axis_0.sort()
-    axis_1 = [*range(width)]*height
 
     message["Map"] = perlin_array((height, width))
 
