@@ -6,7 +6,9 @@ from perlin_noise import PerlinNoise
 from flask import Flask, jsonify
 from flask import request
 from tqdm import tqdm
+
 import numpy as np
+from noise import pnoise2
 
 from multiprocessing import Pool
 
@@ -26,6 +28,37 @@ def generator(i, j):
     return n
 v_gen = np.vectorize(generator)
 
+def perlin_array(shape = (200, 200),
+			scale=100, octaves = 6, 
+			persistence = 0.5, 
+			lacunarity = 2.0, 
+			seed = None):
+
+    if not seed:
+
+        seed = np.random.randint(0, 100)
+        print("seed was {}".format(seed))
+
+    
+
+    arr = np.zeros(shape)
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            arr[i][j] = pnoise2(i / scale,
+                                        j / scale,
+                                        octaves=octaves,
+                                        persistence=persistence,
+                                        lacunarity=lacunarity,
+                                        repeatx=1024,
+                                        repeaty=1024,
+                                        base=seed)
+    max_arr = np.max(arr)
+    min_arr = np.min(arr)
+    norm_me = lambda x: (x-min_arr)/(max_arr - min_arr)
+    norm_me = np.vectorize(norm_me)
+    arr = norm_me(arr)
+    return (255*arr.flatten()).astype("uint8").tolist()
+
 @app.route("/get_data")
 def get_data():
     print(request.args)
@@ -38,8 +71,10 @@ def get_data():
     axis_0 = [*range(height)]*width; axis_0.sort()
     axis_1 = [*range(width)]*height
 
-    with Pool(16) as p:
-        message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
+    message["Map"] = perlin_array((height, width))
+
+    #with Pool(16) as p:
+    #    message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
 
     #message["Map"] = list(v_gen(axis_0, axis_1, noise))
     #message["Map"] = [generator(i,j) for i,j in zip(axis_0, axis_1)]

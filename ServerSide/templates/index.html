@@ -32,7 +32,7 @@
 
     function fetchStatus(){
 
-        let url = new URL('http://localhost:25567/get_data')
+        let url = new URL('http://192.168.12.96:25567/get_data')
         let params = {h:h,w:w}
         url.search = new URLSearchParams(params).toString();
         let data = fetch(url)
