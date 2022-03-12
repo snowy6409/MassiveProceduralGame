@@ -38,15 +38,15 @@ def get_data():
     axis_0 = [*range(height)]*width; axis_0.sort()
     axis_1 = [*range(width)]*height
 
-    #with Pool(16) as p:
-    #    message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
+    with Pool(16) as p:
+        message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
 
     #message["Map"] = list(v_gen(axis_0, axis_1, noise))
     #message["Map"] = [generator(i,j) for i,j in zip(axis_0, axis_1)]
 
-    for i in (range(width)):
-        for j in (range(height)):
-            message["Map"].append(generator(i,j))
+    #for i in (range(width)):
+    #    for j in (range(height)):
+    #        message["Map"].append(generator(i,j))
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -56,4 +56,4 @@ def get_data():
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=25567)
+    app.run(host="192.168.12.96", port=25567)
