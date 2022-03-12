@@ -29,14 +29,14 @@ def generator(i, j):
 v_gen = np.vectorize(generator)
 
 def generator_v2(i,j):
-    return pnoise2(i / 100,
-                    j / 100,
-                    octaves=6,
-                    persistence=0.5,
-                    lacunarity=2.0,
-                    repeatx=1024,
-                    repeaty=1024,
-                    base=seed)
+    return pnoise3(i / 40,
+                   j / 40,
+                   octaves=8,
+                   persistence=0.25,
+                   lacunarity=2.0,
+                   repeatx=1024,
+                   repeaty=1024,
+                   base=seed)
 
 def perlin_array(shape = (200, 200)):
 
@@ -65,8 +65,10 @@ def get_data():
 
     message["Map"] = perlin_array((height, width))
 
-    #with Pool(16) as p:
-    #    message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
+    # axis_0 = [*range(height)]*width; axis_0.sort()
+    # axis_1 = [*range(width)]*height
+    # with Pool(16) as p:
+       # message["Map"] = p.starmap(generator, zip(axis_0, axis_1))
 
     #message["Map"] = list(v_gen(axis_0, axis_1, noise))
     #message["Map"] = [generator(i,j) for i,j in zip(axis_0, axis_1)]
